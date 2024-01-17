@@ -356,8 +356,8 @@ public class BitcoinCoreBuilder {
         }
         
         if let apiSigner {
-            let ecdsaInputSigner = EcdsaInputApiSigner(hdWallet: hdWallet, network: network)
-            let schnorrInputSigner = SchnorrInputApiSigner(hdWallet: hdWallet)
+            let ecdsaInputSigner = EcdsaInputApiSigner(signer: apiSigner, network: network)
+            let schnorrInputSigner = SchnorrInputApiSigner(signer: apiSigner)
             let transactionSizeCalculatorInstance = TransactionSizeCalculator()
             let dustCalculatorInstance = DustCalculator(dustRelayTxFee: network.dustRelayTxFee, sizeCalculator: transactionSizeCalculatorInstance)
             let recipientSetter = RecipientSetter(addressConverter: addressConverter, pluginManager: pluginManager)
