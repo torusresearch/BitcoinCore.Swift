@@ -197,8 +197,8 @@ public class BitcoinCoreBuilder {
                 "index": 0,
                 "external": true,
                 "raw": raw,
-                "hashP2pkh": hashP2pkh,
-                "hashP2wpkhWrappedInP2sh": hashP2wpkhWrappedInP2sh,
+                "keyHash": hashP2pkh,
+                "scriptHashForP2WPKH": hashP2wpkhWrappedInP2sh,
                 "convertedForP2tr": convertedForP2tr
             ]
 
