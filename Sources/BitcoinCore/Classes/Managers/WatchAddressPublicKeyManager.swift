@@ -11,8 +11,8 @@ class WatchAddressPublicKeyManager: IPublicKeyFetcher, IPublicKeyManager, IBloom
         self.restoreKeyConverter = restoreKeyConverter
     }
 
-    func publicKeys(indices _: Range<UInt32>, external _: Bool) throws -> [PublicKey] {
-        [publicKey]
+    func publicKeys(indices : Range<UInt32>, external _: Bool) throws -> [PublicKey] {
+        Array([publicKey][Int(indices.lowerBound)..<Int(indices.upperBound)])
     }
 
     func changePublicKey() throws -> PublicKey {
