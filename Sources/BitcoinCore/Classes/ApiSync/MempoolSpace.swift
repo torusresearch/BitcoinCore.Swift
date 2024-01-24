@@ -13,20 +13,31 @@ public class MempoolSpaceApi {
 }
 
 extension MempoolSpaceApi: IApiTransactionProvider {
+    
+    
     public func transactions(addresses: [String], stopHeight _: Int?) async throws -> [ApiTransactionItem] {
-        let parameters: Parameters = [
-            "addresses": addresses,
-        ]
-        let path = "/address/\(addresses[0])/txs"
-
-        let bcoinItems: [MempoolSpaceTransactionItem] = try await networkManager.fetch(url: url + path, method: .get)
         
+        var bcoinItems : [MempoolSpaceTransactionItem] = []
         
+        await withTaskGroup(of: [MempoolSpaceTransactionItem].self) { group in
+            for addr in addresses {
+                group.addTask {
+                    let path = "/address/\(addr)/txs"
+                    
+                    let bcoinItems: [MempoolSpaceTransactionItem]? = try? await  self.networkManager.fetch(url: self.url + path, method: .get)
+                    return bcoinItems ?? []
+                }
+            }
+            for await result in group {
+                bcoinItems.append(contentsOf: result)
+            }
+        }
+            
         return bcoinItems.compactMap { item -> ApiTransactionItem? in
             guard let blockHash = item.blockHash, let blockHeight = item.blockHeight else {
                 return nil
             }
-
+            
             return ApiTransactionItem(
                 blockHash: blockHash, blockHeight: blockHeight,
                 apiAddressItems: item.txOutputs.map { outputItem in
@@ -34,6 +45,7 @@ extension MempoolSpaceApi: IApiTransactionProvider {
                 }
             )
         }
+        
     }
 }
 
