@@ -205,7 +205,8 @@ public class BitcoinCoreBuilder {
             let manager = WatchAddressPublicKeyManager( publicKey: try WatchAddressPublicKey(row: row), restoreKeyConverter: restoreKeyConverterChain)
             publicKeyManager = manager
             publicKeyFetcher = manager
-            blockHashScanHelper = WatchAddressBlockHashScanHelper()
+            
+            blockHashScanHelper = BlockHashScanHelper()
             
             
         } else if let extendedKey {
