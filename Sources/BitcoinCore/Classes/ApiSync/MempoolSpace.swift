@@ -19,7 +19,7 @@ extension MempoolSpaceApi: IApiTransactionProvider {
         ]
         let path = "/address/\(addresses[0])/txs"
 
-        let bcoinItems: [MempoolSpaceTransactionItem] = try await networkManager.fetch(url: url + path, method: .get, encoding: JSONEncoding.default)
+        let bcoinItems: [MempoolSpaceTransactionItem] = try await networkManager.fetch(url: url + path, method: .get)
         
         
         return bcoinItems.compactMap { item -> ApiTransactionItem? in
