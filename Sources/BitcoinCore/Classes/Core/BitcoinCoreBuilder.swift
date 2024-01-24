@@ -202,7 +202,10 @@ public class BitcoinCoreBuilder {
                 "convertedForP2tr": convertedForP2tr
             ]
 
-            let manager = WatchAddressPublicKeyManager( publicKey: try WatchAddressPublicKey(row: row), restoreKeyConverter: restoreKeyConverterChain)
+            let watchPublicKey = try WatchAddressPublicKey(row: row)
+            storage.add(publicKeys: [watchPublicKey])
+            
+            let manager = WatchAddressPublicKeyManager( publicKey: watchPublicKey, restoreKeyConverter: restoreKeyConverterChain)
             publicKeyManager = manager
             publicKeyFetcher = manager
             
