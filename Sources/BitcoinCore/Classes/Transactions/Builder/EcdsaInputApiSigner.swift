@@ -33,8 +33,11 @@ extension EcdsaInputApiSigner: IInputSigner {
         let pubKey = input.previousOutputPublicKey
         let publicKey = pubKey.raw
 
+        print ("pubkey", pubKey.raw.bytes)
+        print ("signer", signer.publicKey.bytes)
+        
         let signer = self.signer
-        if signer.publicKey.elementsEqual(pubKey.raw)  {
+        if signer.publicKey == pubKey.raw  {
             throw SignError.unMatchedSigner
         }
 
