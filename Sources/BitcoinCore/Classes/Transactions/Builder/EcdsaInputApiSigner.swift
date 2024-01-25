@@ -32,12 +32,9 @@ extension EcdsaInputApiSigner: IInputSigner {
         let previousOutput = input.previousOutput
         let pubKey = input.previousOutputPublicKey
         let publicKey = pubKey.raw
-
-        print ("pubkey", pubKey.raw.bytes)
-        print ("signer", signer.publicKey.bytes)
         
         let signer = self.signer
-        if signer.publicKey == pubKey.raw  {
+        if signer.publicKey != pubKey.raw  {
             throw SignError.unMatchedSigner
         }
 
