@@ -44,7 +44,7 @@ extension EcdsaInputApiSigner: IInputSigner {
         serializedTransaction += UInt32(network.sigHash.value)
         let signatureHash = Crypto.doubleSha256(serializedTransaction)
 
-        let signature = signer.sign(message: signatureHash)
+        let signature = signer.sign(message: signatureHash) + Data([network.sigHash.value])
 
         switch previousOutput.scriptType {
             case .p2pk: return [signature]
