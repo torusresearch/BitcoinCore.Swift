@@ -335,7 +335,31 @@ public class BitcoinCoreBuilder {
         var transactionSender: TransactionSender?
         var transactionCreator: TransactionCreator?
 
-        if let hdWallet {
+        
+        
+        if let apiSigner {
+            let ecdsaInputSigner = EcdsaInputApiSigner(signer: apiSigner, network: network)
+            let schnorrInputSigner = SchnorrInputApiSigner(signer: apiSigner)
+            let transactionSizeCalculatorInstance = TransactionSizeCalculator()
+            let dustCalculatorInstance = DustCalculator(dustRelayTxFee: network.dustRelayTxFee, sizeCalculator: transactionSizeCalculatorInstance)
+            let recipientSetter = RecipientSetter(addressConverter: addressConverter, pluginManager: pluginManager)
+            let outputSetter = OutputSetter(outputSorterFactory: transactionDataSorterFactory, factory: factory)
+            let inputSetter = InputSetter(unspentOutputSelector: unspentOutputSelector, transactionSizeCalculator: transactionSizeCalculatorInstance, addressConverter: addressConverter, publicKeyManager: publicKeyManager, factory: factory, pluginManager: pluginManager, dustCalculator: dustCalculatorInstance, changeScriptType: purpose.scriptType, inputSorterFactory: transactionDataSorterFactory)
+            let lockTimeSetter = LockTimeSetter(storage: storage)
+            let transactionSigner = TransactionSigner(ecdsaInputSigner: ecdsaInputSigner, schnorrInputSigner: schnorrInputSigner)
+            let transactionBuilder = TransactionBuilder(recipientSetter: recipientSetter, inputSetter: inputSetter, lockTimeSetter: lockTimeSetter, outputSetter: outputSetter, signer: transactionSigner)
+            transactionFeeCalculator = TransactionFeeCalculator(recipientSetter: recipientSetter, inputSetter: inputSetter, addressConverter: addressConverter, publicKeyManager: publicKeyManager, changeScriptType: purpose.scriptType)
+            let transactionSendTimer = TransactionSendTimer(interval: 60)
+            let transactionSenderInstance = TransactionSender(transactionSyncer: pendingTransactionSyncer, initialBlockDownload: initialDownload, peerManager: peerManager, storage: storage, timer: transactionSendTimer, logger: logger)
+            
+            dustCalculator = dustCalculatorInstance
+            transactionSizeCalculator = transactionSizeCalculatorInstance
+            transactionSender = transactionSenderInstance
+            
+            transactionSendTimer.delegate = transactionSender
+            
+            transactionCreator = TransactionCreator(transactionBuilder: transactionBuilder, transactionProcessor: pendingTransactionProcessor, transactionSender: transactionSenderInstance, bloomFilterManager: bloomFilterManager)
+        } else if let hdWallet {
             let ecdsaInputSigner = EcdsaInputSigner(hdWallet: hdWallet, network: network)
             let schnorrInputSigner = SchnorrInputSigner(hdWallet: hdWallet)
             let transactionSizeCalculatorInstance = TransactionSizeCalculator()
@@ -359,29 +383,6 @@ public class BitcoinCoreBuilder {
             transactionCreator = TransactionCreator(transactionBuilder: transactionBuilder, transactionProcessor: pendingTransactionProcessor, transactionSender: transactionSenderInstance, bloomFilterManager: bloomFilterManager)
         }
         
-        if let apiSigner {
-            let ecdsaInputSigner = EcdsaInputApiSigner(signer: apiSigner, network: network)
-            let schnorrInputSigner = SchnorrInputApiSigner(signer: apiSigner)
-            let transactionSizeCalculatorInstance = TransactionSizeCalculator()
-            let dustCalculatorInstance = DustCalculator(dustRelayTxFee: network.dustRelayTxFee, sizeCalculator: transactionSizeCalculatorInstance)
-            let recipientSetter = RecipientSetter(addressConverter: addressConverter, pluginManager: pluginManager)
-            let outputSetter = OutputSetter(outputSorterFactory: transactionDataSorterFactory, factory: factory)
-            let inputSetter = InputSetter(unspentOutputSelector: unspentOutputSelector, transactionSizeCalculator: transactionSizeCalculatorInstance, addressConverter: addressConverter, publicKeyManager: publicKeyManager, factory: factory, pluginManager: pluginManager, dustCalculator: dustCalculatorInstance, changeScriptType: purpose.scriptType, inputSorterFactory: transactionDataSorterFactory)
-            let lockTimeSetter = LockTimeSetter(storage: storage)
-            let transactionSigner = TransactionSigner(ecdsaInputSigner: ecdsaInputSigner, schnorrInputSigner: schnorrInputSigner)
-            let transactionBuilder = TransactionBuilder(recipientSetter: recipientSetter, inputSetter: inputSetter, lockTimeSetter: lockTimeSetter, outputSetter: outputSetter, signer: transactionSigner)
-            transactionFeeCalculator = TransactionFeeCalculator(recipientSetter: recipientSetter, inputSetter: inputSetter, addressConverter: addressConverter, publicKeyManager: publicKeyManager, changeScriptType: purpose.scriptType)
-            let transactionSendTimer = TransactionSendTimer(interval: 60)
-            let transactionSenderInstance = TransactionSender(transactionSyncer: pendingTransactionSyncer, initialBlockDownload: initialDownload, peerManager: peerManager, storage: storage, timer: transactionSendTimer, logger: logger)
-
-            dustCalculator = dustCalculatorInstance
-            transactionSizeCalculator = transactionSizeCalculatorInstance
-            transactionSender = transactionSenderInstance
-
-            transactionSendTimer.delegate = transactionSender
-
-            transactionCreator = TransactionCreator(transactionBuilder: transactionBuilder, transactionProcessor: pendingTransactionProcessor, transactionSender: transactionSenderInstance, bloomFilterManager: bloomFilterManager)
-        }
         
         let mempoolTransactions = MempoolTransactions(transactionSyncer: pendingTransactionSyncer, transactionSender: transactionSender)
 
